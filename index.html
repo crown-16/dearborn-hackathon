@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Reef and Temperature Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            height: 100vh;
+            background: #f0f8ff;
+            flex-direction: column;
+        }
+        #map {
+            height: 100%;
+            width: 75%;
+            border: 2px solid #ccc;
+            box-sizing: border-box;
+        }
+        #sidebar {
+            height: 100%;
+            width: 25%;
+            padding: 20px;
+            background: linear-gradient(to bottom right, #f9f9f9, #e0f7fa);
+            overflow-y: auto;
+            border-left: 2px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            margin: 0;
+            padding: 10px;
+            text-align: center;
+            background-color: #add8e6;
+            color: white;
+            border-radius: 5px;
+        }
+        .reef-item {
+            margin: 10px 0;
+            padding: 15px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s, transform 0.2s;
+        }
+        .reef-item:hover {
+            background: #e0e0e0;
+            transform: scale(1.02);
+        }
+        #navigate-button {
+            padding: 12px 25px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        #navigate-button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+        #navigate-button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <h1>Major Coral Reefs on Our Planet</h1>
+    <div style="display: flex; flex: 1;">
+        <div id="sidebar">
+            <div id="reef-list"></div>
+            <button id="navigate-button" onclick="window.location.href='/coral';">
+                Go to Coral Information
+            </button>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map', {
+            center: [20, 0], 
+            zoom: 2, 
+            minZoom: 2, 
+            maxBounds: [
+                [-90, -180],
+                [90, 180]
+            ],
+            maxBoundsViscosity: 1.0
+        });
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Coral Reefs with updated statuses
+        const coralReefs = [
+            { 
+                name: "Great Barrier Reef", coords: [-18.2871, 147.6992], country: "Australia", 
+                tempF: 82, criticalTempF: 84, status: "Up-and-Coming", 
+                accate: { tempTrend: "+2°F in 5 years", bleachingEvents: 3 }
+            },
+            { 
+                name: "Belize Barrier Reef", coords: [17.9689, -87.9211], country: "Belize", 
+                tempF: 80, criticalTempF: 84, status: "Not Healthy", 
+                accate: { tempTrend: "+1.5°F in 4 years", bleachingEvents: 1 }
+            },
+            { 
+                name: "Coral Triangle", coords: [-5.0, 135.0], country: "Southeast Asia", 
+                tempF: 83, criticalTempF: 84, status: "Close to Critical", 
+                accate: { tempTrend: "+2.3°F in 3 years", bleachingEvents: 5 }
+            },
+            { 
+                name: "Northern GBR", coords: [-10.5, 142.5], country: "Australia", 
+                tempF: 84, criticalTempF: 84, status: "At Critical", 
+                accate: { tempTrend: "+3°F in 5 years", bleachingEvents: 4 }
+            },
+            { 
+                name: "Florida Reef", coords: [24.3963, -81.6934], country: "United States", 
+                tempF: 85, criticalTempF: 84, status: "Bleached", 
+                accate: { tempTrend: "+3.5°F in 3 years", bleachingEvents: "100% Bleached" }
+            },
+            {
+                name: "Tubbataha Reefs", coords: [9.0, 119.0], country: "Philippines",
+                tempF: 82, criticalTempF: 84, status: "Healthy",
+                accate: { tempTrend: "+1°F in 2 years", bleachingEvents: 0 }
+            },
+            {
+                name: "Apo Reef", coords: [12.0584, 120.1285], country: "Philippines",
+                tempF: 84, criticalTempF: 84, status: "Not Healthy",
+                accate: { tempTrend: "+1.5°F in 3 years", bleachingEvents: 2 }
+            },
+            {
+                name: "Red Sea Reef", coords: [25.0, 35.0], country: "Egypt/Saudi Arabia",
+                tempF: 84, criticalTempF: 84, status: "Close to Critical",
+                accate: { tempTrend: "+1.5°F in 3 years", bleachingEvents: 2 }
+            },
+            {
+                name: "Persian Gulf Reef", coords: [26.0, 53.0], country: "Iran/Saudi Arabia",
+                tempF: 86, criticalTempF: 84, status: "At Critical",
+                accate: { tempTrend: "+4°F in 2 years", bleachingEvents: 3 }
+            }
+            
+            
+        ];
+
+        // Function to convert Fahrenheit to Celsius
+        function fahrenheitToCelsius(f) {
+            return ((f - 32) * 5 / 9).toFixed(2);
+        }
+
+        // Function to get marker color based on status
+        function getMarkerColor(status) {
+            switch (status) {
+                case "At Critical": return 'yellow';
+                case "Close to Critical": return 'orange';
+                case "Not Healthy": return 'red';
+                case "Up-and-Coming": return 'lightgreen';
+                case "Healthy": return 'green';
+                case "Bleached": return 'black';
+                default: return 'gray';
+            }
+        }
+
+        // Add markers to the map
+        function addMarkers(reefData) {
+            reefData.forEach(reef => {
+                const color = getMarkerColor(reef.status);
+
+                const marker = L.circleMarker(reef.coords, {
+                    color: color,
+                    radius: 12,
+                    fillOpacity: 0.7
+                }).addTo(map);
+
+                const reefItem = document.createElement('div');
+                reefItem.className = 'reef-item';
+                reefItem.textContent = `${reef.name} - ${reef.status}`;
+
+                reefItem.onclick = () => {
+                    map.setView(reef.coords, 5);
+                    marker.openPopup();
+                };
+
+                marker.bindPopup(` 
+                    <strong>${reef.name}</strong><br>
+                    Location: ${reef.country}<br>
+                    Status: ${reef.status}<br>
+                    Temperature: ${reef.tempF}°F (${fahrenheitToCelsius(reef.tempF)}°C)<br>
+                    ACCATE: Temp Trend ${reef.accate.tempTrend}, Bleaching Events: ${reef.accate.bleachingEvents}
+                `);
+
+                document.getElementById('reef-list').appendChild(reefItem);
+            });
+        }
+
+        // Initialize markers on the map
+        addMarkers(coralReefs);
+    </script>
+</body>
+</html>
