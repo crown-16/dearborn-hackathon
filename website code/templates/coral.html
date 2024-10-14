@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coral Health and Temperature Game</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1580019542155-247062e19ce4?i'); /* Coral reef background */
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 20px;
+            color: white; /* Change text color to white for better contrast */
+            text-align: center;
+        }
+
+        h1 {
+            color: #ff7f50; /* Coral color for heading */
+            margin-bottom: 20px;
+            font-size: 36px; /* Increase header size */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Add shadow for readability */
+        }
+
+        /* New styles for text boxes */
+        .text-box {
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+            border-radius: 10px; /* Rounded corners */
+            padding: 20px; /* Padding for inner spacing */
+            margin: 20px auto; /* Center and add vertical spacing */
+            max-width: 800px; /* Limit the maximum width */
+        }
+
+        .coral {
+            font-size: 60px; /* Smaller coral emoji */
+            margin: 20px auto;
+            transition: transform 0.5s; /* Smooth effect */
+        }
+
+        #health-display {
+            font-size: 60px; /* Smaller health emoji */
+            margin-top: 20px;
+        }
+
+        #temperature-display {
+            font-size: 28px; /* Increase temperature text size */
+            margin: 10px 0;
+        }
+
+        .meter {
+            width: 50%; /* Make the meter smaller and centered */
+            height: 20px; /* Make the meter smaller */
+            background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+            border-radius: 5px;
+            margin: 20px auto; /* Center the meter */
+            overflow: hidden;
+        }
+
+        .filler {
+            height: 100%;
+            background-color: #ff7f50; /* Coral color for the filler */
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .temp-effect-button {
+            background-color: #ff4500; /* Coral red button */
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .temp-effect-button:hover {
+            background-color: #e03e00; /* Darker coral red on hover */
+        }
+
+        .reset-button {
+            background-color: #28a745; /* Green button */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .reset-button:hover {
+            background-color: #218838; /* Darker green on hover */
+        }
+
+        #coral-warning {
+            font-size: 22px; /* Increase warning text size */
+            margin-top: 20px;
+            color: #d9534f; /* Red color for warning */
+        }
+
+        /* Decorative styles */
+        p {
+            font-weight: bold; /* Make the text bold */
+        }
+
+        .emphasis {
+            color: #ff7f50; /* Highlight important phrases */
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>How Temperature Affects Coral Health</h1>
+    <div id="coral" class="coral"></div>
+    <div class="text-box">
+        <!-- Added emojis here -->
+        <div style="font-size: 60px; margin-bottom: 10px;">🌊🌡️</div>
+        <div id="health-display">🪸🙂</div>
+        <div id="temperature-display">
+            Temperature: <span id="temp-value">73</span>°F / <span id="temp-celsius">23</span>°C
+        </div>
+    </div>
+    
+    <div class="meter">
+        <div class="filler" id="meter-filler"></div>
+    </div>
+
+    <div class="text-box">
+        <div>
+            <button class="temp-effect-button" data-temp="82">82°F</button>
+            <button class="temp-effect-button" data-temp="86">86°F</button>
+            <button class="temp-effect-button" data-temp="92">92°F</button>
+            <button class="temp-effect-button" data-temp="95">95°F</button>
+        </div>
+        <p>Click a temperature button to see its effect on coral health.</p>
+        <button class="reset-button" id="reset-button">Reset Temperature</button>
+        <p id="coral-warning" style="margin-top: 20px; font-size: 22px;"></p>
+    </div>
+
+    <div class="text-box">
+        <div id="coral-info">
+            <p>
+                🌊 <span class="emphasis">Coral reefs</span> are not just beautiful underwater landscapes; they are crucial ecosystems that protect our coastlines from the destructive forces of hurricanes. 
+                These vibrant communities act as natural barriers, significantly reducing wave energy and minimizing storm surge impacts. 
+                🌪️ However, the decline of Florida's coral reefs, driven by rising temperatures and environmental stressors, is worsening the intensity of hurricanes in the region. 
+                Without healthy coral reefs, coastlines are left vulnerable to the full force of storms, leading to increased destruction and damage in hurricane-prone areas.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const coral = document.getElementById('coral');
+        const healthDisplay = document.getElementById('health-display');
+        const meterFiller = document.getElementById('meter-filler');
+        const tempValueDisplay = document.getElementById('temp-value');
+        const tempCelsiusDisplay = document.getElementById('temp-celsius');
+        const resetButton = document.getElementById('reset-button');
+        const tempEffectButtons = document.querySelectorAll('.temp-effect-button');
+        const coralWarning = document.getElementById('coral-warning');
+
+        const updateHealthDisplay = (temperature) => {
+            tempValueDisplay.textContent = temperature;
+            tempCelsiusDisplay.textContent = Math.round((temperature - 32) * 5 / 9);
+            meterFiller.style.width = `${(temperature - 73) / (95 - 73) * 100}%`;
+
+            if (temperature < 82) {
+                healthDisplay.textContent = '🪸🙂';
+                coralWarning.textContent = '';
+            } else if (temperature <= 86) {
+                healthDisplay.textContent = '🪸😐🚩';
+                coralWarning.textContent = `Warning: Coral health is beginning to decline at ${temperature}°F!`;
+            } else if (temperature <= 92) {
+                healthDisplay.textContent = '🪸🥵📉';
+                coralWarning.textContent = `Warning: Coral health is at risk at ${temperature}°F!`;
+            } else {
+                healthDisplay.textContent = '🪸💀🪦';
+                coralWarning.textContent = `Danger: Coral reefs are severely impacted at ${temperature}°F!`;
+            }
+        };
+
+        tempEffectButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const temperature = parseInt(this.dataset.temp);
+                updateHealthDisplay(temperature);
+            });
+        });
+
+        resetButton.addEventListener('click', () => {
+            updateHealthDisplay(73); // Reset temperature to 73°F
+        });
+
+        // Initial display
+        updateHealthDisplay(73);
+    </script>
+</body>
+</html>
+

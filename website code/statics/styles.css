@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0; /* Remove padding for full-size background */
+    background-image: url('static/world_map.jpg');
+    background-size: cover; /* Cover the whole screen */
+    background-position: center; /* Center the image */
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+h1 {
+    color: #fff; /* Change text color to white for better contrast */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Add shadow for readability */
+}
+
+.coral-reef-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    position: relative; /* Position relative for better control */
+    z-index: 1; /* Ensure coral reef is on top of the background */
+}
+
+.coral-reef {
+    animation: wave 2s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
